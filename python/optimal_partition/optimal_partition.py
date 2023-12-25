@@ -18,7 +18,7 @@ def unique_substring(substrings, to_process):
         chars_consumed.add(current_char)
         substring += str(current_char)
         rest = list(itz.drop(1, to_process))
-        current_char = list(itz.take(1, rest))
+        current_char = itz.first(itz.take(1, rest))
     substrings.append(substring)
     return [substrings, rest]
 

@@ -1,11 +1,12 @@
-import optimal_partition as opt
+import optimal_partition as pt
 
 
 # def test_simple_things():
 #     assert 1
 
 def test_unique_substring():
-    assert opt.unique_substring([], "s") == ["s"]
+    # assert pt.unique_substring([], "s") == [["s"], []]
+    assert pt.unique_substring([], "ss") == [["s"], ["s"]]
 
 # def test_optimal_partition():
 #     assert optimal_partition("abacaba") == 4
