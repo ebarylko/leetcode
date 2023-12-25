@@ -5,8 +5,9 @@ import optimal_partition as pt
 #     assert 1
 
 def test_unique_substring():
-    # assert pt.unique_substring([], "s") == [["s"], []]
-    # assert pt.unique_substring([], "ss") == [["s"], ["s"]]
+    assert pt.unique_substring([], "") == [[""], ""]
+    assert pt.unique_substring([], "s") == [["s"], []]
+    assert pt.unique_substring([], "ss") == [["s"], ["s"]]
     assert pt.unique_substring([], "sts") == [["st"], ["s"]]
 
 

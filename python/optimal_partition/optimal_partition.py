@@ -11,14 +11,13 @@ def unique_substring(substrings, to_process):
     """
     chars_consumed = set()
 
-    current_char, rest = [itz.first(to_process), to_process]
-    # return [current_char, list(rest)]
+    current_char, rest = [next(iter(to_process), None), to_process]
     substring = ""
     while current_char and current_char not in chars_consumed:
         chars_consumed.add(current_char)
-        substring += str(current_char)
+        substring += current_char
         rest = list(itz.drop(1, rest))
-        current_char = itz.first(itz.take(1, rest))
+        current_char = next(itz.take(1, rest), None)
     substrings.append(substring)
     return [substrings, rest]
 
