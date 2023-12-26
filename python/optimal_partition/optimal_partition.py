@@ -1,7 +1,12 @@
-import functools as ftz
-import toolz.itertoolz as itz
+import functools as ft
+import operator
 
-def unique_substring(substrings, to_process):
+import toolz as tz
+import toolz.itertoolz as itz
+import itertools as it
+
+
+def unique_substring(tuple):
     """
     :param substrings: a collection of the unique substrings
     :param to_process: the rest of the original word which
@@ -9,22 +14,31 @@ def unique_substring(substrings, to_process):
     :return: the collection of unique substrings with the newest
     unique substring found in to_process
     """
+    substrings, to_process = tuple
     chars_consumed = set()
 
-    current_char, rest = [next(iter(to_process), None), to_process]
+    rest = to_process
     substring = ""
-    while current_char and current_char not in chars_consumed:
+    while rest and rest[0] not in chars_consumed:
+        current_char, *rest = rest
         chars_consumed.add(current_char)
         substring += current_char
-        rest = list(itz.drop(1, rest))
-        current_char = next(itz.take(1, rest), None)
-    substrings.append(substring)
-    return [substrings, rest]
 
+    substrings.append(substring)
+
+    return substrings, rest
 
 
 def unique_substrings(word):
-    return reduce(unique_substring, word, [])
+    return tz.pipe(
+        [[], list(word)],
+        ft.partial(itz.iterate, unique_substring),
+        ft.partial(it.dropwhile, operator.itemgetter(1)),
+        next,
+        operator.itemgetter(0)
+        # list
+    )
+
 
 def optimal_partition(word):
     """
