@@ -81,9 +81,10 @@ def optimal_partition_2(word):
     contain unique characters
     """
     number_of_substrings = current_pos = 0
+    to_process = list(word)
 
-    while current_pos != unique_substring_2(list(word), current_pos):
-        current_pos = unique_substring_2(list(word), current_pos)
+    while current_pos != unique_substring_2(to_process, current_pos):
+        current_pos = unique_substring_2(to_process, current_pos)
         number_of_substrings += 1
 
     return number_of_substrings
