@@ -1,7 +1,12 @@
-import functools as ftz
-import toolz.itertoolz as itz
+import functools as ft
+import operator
 
-def unique_substring(substrings, to_process):
+import toolz as tz
+import toolz.itertoolz as itz
+import itertools as it
+
+
+def unique_substring(tuple):
     """
     :param substrings: a collection of the unique substrings
     :param to_process: the rest of the original word which
@@ -9,23 +14,39 @@ def unique_substring(substrings, to_process):
     :return: the collection of unique substrings with the newest
     unique substring found in to_process
     """
+    substrings, to_process = tuple
     chars_consumed = set()
 
-    current_char, rest = [itz.first(to_process), itz.drop(1, to_process)]
-    # return [current_char, list(rest)]
+    rest = to_process
     substring = ""
-    while current_char and current_char not in chars_consumed:
+    while rest and rest[0] not in chars_consumed:
+        current_char, *rest = rest
         chars_consumed.add(current_char)
-        substring += str(current_char)
-        rest = list(itz.drop(1, to_process))
-        current_char = list(itz.take(1, rest))
-    substrings.append(substring)
-    return [substrings, rest]
+        substring += current_char
 
+    substrings.append(substring)
+
+    return substrings, rest
+
+
+# def unique_substrings(word):
+#     # return tz.pipe(
+#     #     [[], list(word)],
+#     #     ft.partial(itz.iterate, unique_substring),
+#     #     ft.partial(it.dropwhile, operator.itemgetter(1)),
+#     #     next,
+#     #     operator.itemgetter(0)
+# )
 
 
 def unique_substrings(word):
-    return reduce(unique_substring, word, [])
+    substrings, to_process = [[], list(word)]
+
+    while to_process:
+        substrings, to_process = unique_substring((substrings, to_process))
+
+    return substrings
+
 
 def optimal_partition(word):
     """
@@ -33,4 +54,37 @@ def optimal_partition(word):
     :return: the minimum number of substrings made by partitioning the word that
     contain unique characters
     """
-    return unique_substrings(word)
+    return len(unique_substrings(word))
+
+
+def unique_substring_2(word, current_pos):
+    """
+    :param current_pos: the current location at where to start another partition
+    :param word: the word being partitioned
+    :return: the new position for the next partition
+    ex: unique_substring_2("aba") -> 2
+    """
+    chars_consumed = set()
+
+    while current_pos < len(word) and word[current_pos] not in chars_consumed:
+        current_char = word[current_pos]
+        chars_consumed.add(current_char)
+        current_pos += 1
+
+    return current_pos
+
+
+def optimal_partition_2(word):
+    """
+    :param word: the word to partition
+    :return: the minimum number of substrings made by partitioning the word that
+    contain unique characters
+    """
+    number_of_substrings = current_pos = 0
+    to_process = list(word)
+
+    while current_pos != unique_substring_2(to_process, current_pos):
+        current_pos = unique_substring_2(to_process, current_pos)
+        number_of_substrings += 1
+
+    return number_of_substrings
