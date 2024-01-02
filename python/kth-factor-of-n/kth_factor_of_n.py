@@ -18,8 +18,29 @@ def generate_positive_integers_up_to_square_root(number):
         (op.add, 1),
         range,
         (tz.drop, 1),
-        list
+        list)
+
+
+def find_factors_of_n_using_t(number, divisor):
+    """
+    :param number: a positive integer
+    :param divisor: a positive integer
+    :return: a collection of all the integer factors of number that appear
+    after continuously dividing by divisor
+    """
+    def divide_by(divide, num):
+        return op.truediv(num, divide)
+
+    return {1, number} if divisor == 1 or number % divisor != 0 else tz.thread_last(
+        number,
+        (tz.iterate, tz.partial(divide_by, divisor)),
+        (it.takewhile, lambda num: int(num) - num == 0),
+        (map, int),
+        list,
+        reversed,
+        set
     )
+
 
 
 def kth_factor(number, k):
@@ -32,13 +53,8 @@ def kth_factor(number, k):
     return tz.thread_last(
         number,
         generate_positive_integers_up_to_square_root,
-        (tz.mapcat, find_factors_for_each_value),
+        (tz.mapcat, tz.partial(find_factors_of_n_using_t, number)),
         set,
         lambda coll: -1 if k >= len(coll) else coll[k]
-        # math.sqrt,
-        # math.floor,
-        # (op.add, 1),
-        # range,
-        # list,
 
     )
