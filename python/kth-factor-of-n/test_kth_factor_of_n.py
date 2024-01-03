@@ -20,10 +20,11 @@ def test_find_factors_of_n_using_t():
 
 
 def test_find_factors_of_n_using_t_2():
-    assert kth.find_factors_of_n_using_t_2(10, 1) == [1, 10]
-    assert kth.find_factors_of_n_using_t_2(16, 3) == [1, 16]
-    assert kth.find_factors_of_n_using_t_2(16, 2) == [1, 2, 4, 8, 16]
-    assert kth.find_factors_of_n_using_t_2(12, 2) == [1, 2, 3, 4, 6, 12]
+    assert kth.find_factors_of_n_using_t_2(10, 1) == {1, 10}
+    assert kth.find_factors_of_n_using_t_2(16, 3) == {1, 16}
+    assert kth.find_factors_of_n_using_t_2(16, 2) == {1, 2, 4, 8, 16}
+    assert kth.find_factors_of_n_using_t_2(12, 2) == {1, 2, 3, 4, 6, 12}
+    assert kth.find_factors_of_n_using_t_2(1, 1) == {1}
 
 
 def test_kth_factor():
@@ -37,8 +38,8 @@ def test_kth_factor():
 
 
 def test_kth_factor_2():
-    # assert kth.kth_factor_2(1, 1) == 1
-    assert kth.kth_factor_2(12, 3) == 3
+    assert kth.kth_factor_2(1, 1) == 1
+    # assert kth.kth_factor_2(12, 3) == 3
     # assert kth.kth_factor_2(7, 2) == 7
     # assert kth.kth_factor_2(4, 4) == -1
     # assert kth.kth_factor_2(36, 5) == 6

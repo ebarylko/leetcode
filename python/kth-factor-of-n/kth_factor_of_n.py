@@ -78,7 +78,7 @@ def generate_positive_integers_up_to_square_root_2(number):
     """
     integer_root = math.floor(math.sqrt(number))
     integers = range(1, integer_root + 1)
-    return list(integers[1:])
+    return list(integers)
 
 
 def quotient_divisor_and_power_2(t):
@@ -98,7 +98,7 @@ def find_factors_of_n_using_t_2(number, divisor):
     after continuously dividing by divisor
     """
     if divisor == 1 or number % divisor != 0:
-        return [1, number]
+        return {1, number}
     else:
         factors = {1, number}
         t = (number, divisor, 0)
@@ -110,22 +110,7 @@ def find_factors_of_n_using_t_2(number, divisor):
             # factors.add((quotient, math.pow(divisor, exponent)))
             quotient, divisor, exponent = quotient_divisor_and_power((quotient, divisor, exponent))
 
-        return sorted(factors)
-
-
-
-    # tz.thread_last(
-    #     (number, divisor, 0),
-    #     (tz.iterate, quotient_divisor_and_power),
-    #     (it.takewhile, lambda t: t[0] - int(t[0]) == 0),
-    #     (map, tz.juxt(
-    #         tz.compose(int, tz.first),
-    #         tz.compose(int,
-    #                    tz.partial(math.pow, divisor),
-    #                    tz.last))),
-    #     lambda coll: it.chain(*coll),
-    #     set
-    # )
+        return factors
 
 
 def kth_factor_2(number, k):
@@ -135,12 +120,19 @@ def kth_factor_2(number, k):
     :return: the kth factor of number if there are at least k factors, -1 otherwise
     ex: kth_factor(10, 3) = 5
     """
-    return tz.thread_last(
-        number,
-        generate_positive_integers_up_to_square_root,
-        (tz.mapcat, tz.partial(find_factors_of_n_using_t_2, number)),
-        tz.frequencies,
-        list,
-        sorted,
-        lambda coll: tz.get(k - 1, coll, -1),
-    )
+    integers_up_to_root_of_num = generate_positive_integers_up_to_square_root_2(number)
+    factors = [*map(find_factors_of_n_using_t_2, [number] * len(integers_up_to_root_of_num), integers_up_to_root_of_num)]
+    return factors
+    # unique_factors = factors[0] #if len(factors) < 2 else factors[0].union(*factors[1:])
+    # integer_factors = [*map(int, unique_factors)]
+    # return integer_factors
+    # return -1 if k - 1 > len(integer_factors) else sorted(integer_factors)[k - 1]
+    # return tz.thread_last(
+    #     number,
+    #     generate_positive_integers_up_to_square_root,
+    #     (tz.mapcat, tz.partial(find_factors_of_n_using_t_2, number)),
+    #     tz.frequencies,
+    #     list,
+    #     sorted,
+    #     lambda coll: tz.get(k - 1, coll, -1),
+    # )
