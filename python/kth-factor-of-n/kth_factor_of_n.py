@@ -37,18 +37,19 @@ def find_factors_of_n_using_t(number, divisor):
     :return: a collection of all the integer factors of number that appear
     after continuously dividing by divisor
     """
-    def divide_by(divide, num):
-        return op.truediv(num, divide)
 
     return {1, number} if divisor == 1 or number % divisor != 0 else tz.thread_last(
         (number, divisor, 0),
         (tz.iterate, quotient_divisor_and_power),
         (it.takewhile, lambda t: t[0] - int(t[0]) == 0),
-        (map, tz.juxt(tz.compose(int, tz.first), tz.compose(int, tz.partial(math.pow, divisor), tz.last))),
+        (map, tz.juxt(
+            tz.compose(int, tz.first),
+            tz.compose(int,
+                       tz.partial(math.pow, divisor),
+                       tz.last))),
         lambda coll: it.chain(*coll),
         set
     )
-
 
 
 def kth_factor(number, k):
@@ -61,9 +62,85 @@ def kth_factor(number, k):
     return tz.thread_last(
         number,
         generate_positive_integers_up_to_square_root,
-        (tz.map, tz.partial(find_factors_of_n_using_t, number)),
-        list
-        # set,
-        # lambda coll: -1 if k >= len(coll) else coll[k]
+        (tz.mapcat, tz.partial(find_factors_of_n_using_t, number)),
+        tz.frequencies,
+        list,
+        sorted,
+        lambda coll: tz.get(k - 1, coll, -1),
+    )
 
+
+def generate_positive_integers_up_to_square_root_2(number):
+    """
+    :param number: a positive integer
+    :return: a collection of positive integers less than or equal to
+    the square root of number
+    """
+    integer_root = math.floor(math.sqrt(number))
+    integers = range(1, integer_root + 1)
+    return list(integers[1:])
+
+
+def quotient_divisor_and_power_2(t):
+    """
+    :param t: a tuple containing a quotient, a divisor, and the exponent of the divisor
+    :return: a tuple containing the quotient divided by the divisor, the divisor, and the exponent incremented
+    """
+    quotient, divisor, exponent = t
+    return quotient / divisor, divisor, exponent + 1
+
+
+def find_factors_of_n_using_t_2(number, divisor):
+    """
+    :param number: a positive integer
+    :param divisor: a positive integer
+    :return: a collection of all the integer factors of number that appear
+    after continuously dividing by divisor
+    """
+    if divisor == 1 or number % divisor != 0:
+        return [1, number]
+    else:
+        factors = {1, number}
+        t = (number, divisor, 0)
+        quotient, divisor, exponent = quotient_divisor_and_power(t)
+        while int(quotient) - quotient == 0:
+            factors.add(quotient)
+            factors.add(math.pow(divisor, exponent))
+
+            # factors.add((quotient, math.pow(divisor, exponent)))
+            quotient, divisor, exponent = quotient_divisor_and_power((quotient, divisor, exponent))
+
+        return sorted(factors)
+
+
+
+    # tz.thread_last(
+    #     (number, divisor, 0),
+    #     (tz.iterate, quotient_divisor_and_power),
+    #     (it.takewhile, lambda t: t[0] - int(t[0]) == 0),
+    #     (map, tz.juxt(
+    #         tz.compose(int, tz.first),
+    #         tz.compose(int,
+    #                    tz.partial(math.pow, divisor),
+    #                    tz.last))),
+    #     lambda coll: it.chain(*coll),
+    #     set
+    # )
+
+
+def kth_factor_2(number, k):
+    """
+    :param number: a positive integer
+    :param k: a positive integer
+    :return: the kth factor of number if there are at least k factors, -1 otherwise
+    ex: kth_factor(10, 3) = 5
+    """
+    return tz.thread_last(
+        number,
+        generate_positive_integers_up_to_square_root,
+        (tz.mapcat, tz.partial(find_factors_of_n_using_t_2, number)),
+        tz.frequencies,
+        list,
+        sorted,
+        lambda coll: tz.get(k - 1, coll, -1),
     )
