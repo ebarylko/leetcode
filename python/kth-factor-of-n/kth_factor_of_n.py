@@ -37,7 +37,6 @@ def find_factors_of_n_using_t(number, divisor):
     :return: a collection of all the integer factors of number that appear
     after continuously dividing by divisor
     """
-
     return {1, number} if divisor == 1 or number % divisor != 0 else tz.thread_last(
         (number, divisor, 0),
         (tz.iterate, quotient_divisor_and_power),
@@ -122,17 +121,7 @@ def kth_factor_2(number, k):
     """
     integers_up_to_root_of_num = generate_positive_integers_up_to_square_root_2(number)
     factors = [*map(find_factors_of_n_using_t_2, [number] * len(integers_up_to_root_of_num), integers_up_to_root_of_num)]
-    return factors
-    # unique_factors = factors[0] #if len(factors) < 2 else factors[0].union(*factors[1:])
-    # integer_factors = [*map(int, unique_factors)]
-    # return integer_factors
-    # return -1 if k - 1 > len(integer_factors) else sorted(integer_factors)[k - 1]
-    # return tz.thread_last(
-    #     number,
-    #     generate_positive_integers_up_to_square_root,
-    #     (tz.mapcat, tz.partial(find_factors_of_n_using_t_2, number)),
-    #     tz.frequencies,
-    #     list,
-    #     sorted,
-    #     lambda coll: tz.get(k - 1, coll, -1),
-    # )
+    unique_factors = factors[0] if len(factors) < 2 else factors[0].union(*factors[1:])
+    integer_factors = [*map(int, unique_factors)]
+    return -1 if k - 1 >= len(integer_factors) else sorted(integer_factors)[k - 1]
+

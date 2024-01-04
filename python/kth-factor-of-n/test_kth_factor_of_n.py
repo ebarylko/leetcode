@@ -39,9 +39,10 @@ def test_kth_factor():
 
 def test_kth_factor_2():
     assert kth.kth_factor_2(1, 1) == 1
-    # assert kth.kth_factor_2(12, 3) == 3
-    # assert kth.kth_factor_2(7, 2) == 7
-    # assert kth.kth_factor_2(4, 4) == -1
-    # assert kth.kth_factor_2(36, 5) == 6
-    # assert kth.kth_factor_2(36, 6) == 9
-    # assert kth.kth_factor_2(36, 7) == 12
+    assert kth.kth_factor_2(12, 3) == 3
+    assert kth.kth_factor_2(7, 2) == 7
+    assert kth.kth_factor_2(4, 4) == -1
+    assert kth.kth_factor_2(36, 5) == 6
+    assert kth.kth_factor_2(36, 6) == 9
+    assert kth.kth_factor_2(36, 7) == 12
+
