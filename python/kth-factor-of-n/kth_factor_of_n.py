@@ -1,4 +1,5 @@
 import math
+from collections import namedtuple
 
 import toolz as tz
 import itertools as it
@@ -18,7 +19,11 @@ def generate_positive_integers_up_to_square_root(number):
         (op.add, 1),
         range,
         (tz.drop, 1),
-        list)
+        list
+        )
+
+
+QuotientResult = namedtuple("QuotientResult", ["quotient", "divisor", "power"])
 
 
 def quotient_divisor_and_power(t):
@@ -27,24 +32,24 @@ def quotient_divisor_and_power(t):
     :return: a tuple containing the quotient divided by the divisor, the divisor, and the exponent incremented
     """
     quotient, divisor, exponent = t
-    return quotient / divisor, divisor, exponent + 1
+    return QuotientResult(quotient / divisor, divisor, exponent + 1)
 
 
-def find_factors_of_n_using_t(number, divisor):
+def find_factors_of_n_using_t(number, t):
     """
     :param number: a positive integer
-    :param divisor: a positive integer
+    :param t: a positive integer
     :return: a collection of all the integer factors of number that appear
     after continuously dividing by divisor
     """
-    return {1, number} if divisor == 1 or number % divisor != 0 else tz.thread_last(
-        (number, divisor, 0),
+    return {1, number} if t == 1 or number % t != 0 else tz.thread_last(
+        QuotientResult(number, t, 0),
         (tz.iterate, quotient_divisor_and_power),
-        (it.takewhile, lambda t: t[0] - int(t[0]) == 0),
+        (it.takewhile, lambda qr: int(qr.quotient) - qr.quotient == 0),
         (map, tz.juxt(
             tz.compose(int, tz.first),
             tz.compose(int,
-                       tz.partial(math.pow, divisor),
+                       tz.partial(math.pow, t),
                        tz.last))),
         lambda coll: it.chain(*coll),
         set
@@ -106,7 +111,6 @@ def find_factors_of_n_using_t_2(number, divisor):
             factors.add(quotient)
             factors.add(math.pow(divisor, exponent))
 
-            # factors.add((quotient, math.pow(divisor, exponent)))
             quotient, divisor, exponent = quotient_divisor_and_power((quotient, divisor, exponent))
 
         return factors
