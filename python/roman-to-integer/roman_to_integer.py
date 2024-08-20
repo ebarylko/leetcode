@@ -1,5 +1,5 @@
 from functools import reduce
-from toolz import concat, first, second, juxt
+from toolz import concat, first, second, juxt, thread_last
 
 
 numerals_to_integer = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100, "D": 500, "M": 1000}
@@ -10,14 +10,18 @@ def extract_portion_to_eval(roman_numeral: str) -> str:
     :param roman_numeral: a roman numeral ranging from 1 to 3999
     :return: the largest unit of the numeral
     """
-    def first_and_second(coll):
-        return juxt(first, second)(coll)
+    def num_of_chars_to_extract(numeral_portion: tuple[str, str]) -> int:
+        fst_part, snd_part = numeral_portion
+        return 1 if numerals_to_integer[fst_part] >= numerals_to_integer[snd_part] else 2
 
-    def num_of_chars_to_extract(numeral_1: str, numeral_2: str) -> int:
-        return 1 if numerals_to_integer[numeral_1] >= numerals_to_integer[numeral_2] else 2
+    def extract_n_chars(num_of_chars: int) -> str:
+        return roman_numeral[0: num_of_chars]
 
-    first_char, second_char = first_and_second(roman_numeral)
-    return roman_numeral[0: num_of_chars_to_extract(first_char, second_char)]
+    return thread_last(roman_numeral,
+                       juxt(first, second),
+                       num_of_chars_to_extract,
+                       extract_n_chars
+    )
 
 
 # def split_into_expanded_form(numeral: str) -> list[str]:
