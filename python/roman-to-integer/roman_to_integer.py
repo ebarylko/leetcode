@@ -22,7 +22,7 @@ numerals_to_integer = {"I": 1,
 def extract_portion_to_eval(roman_numeral: str) -> str:
     """
     :param roman_numeral: a roman numeral ranging from 1 to 3999
-    :return: the largest unit of the numeral
+    :return: the largest portion of the numeral
     """
     def num_of_chars_to_extract(numeral_portion: tuple[str, str]) -> int:
         fst_part, snd_part = numeral_portion
@@ -38,29 +38,38 @@ def extract_portion_to_eval(roman_numeral: str) -> str:
     )
 
 
-def split_into_expanded_form(numeral: str) -> list[str]:
+def extract_largest_portion_of_numeral(expanded_form_and_numeral: tuple[list[str], str]):
     """
-    :param numeral: a roman numeral
-    :return: the portions of the given numeral to evaluate
-    when determining the numerical value
+    :param expanded_form_and_numeral: a collection containing the
+    expanded form of a numeral and the aforementioned numeral to process
+    :return: a tuple with the expanded form containing the largest portion of the
+    numeral passed and the same numeral excluding what was recently extracted
     """
+    def conj_string(coll, string):
+        return coll + [string]
+
     def on_last_portion(roman_numeral):
         return extract_portion_to_eval(roman_numeral) == roman_numeral
 
-    def add_portion_of_numeral_to_eval(remaining_numeral_and_portions_to_eval: tuple[list[str], str]):
-        expanded_form, remaining_numeral = remaining_numeral_and_portions_to_eval
-        if on_last_portion(numeral):
-            return expanded_form + [remaining_numeral], []
-        else:
-            portion_to_eval = extract_portion_to_eval(remaining_numeral)
-            return expanded_form + [portion_to_eval], remaining_numeral[len(portion_to_eval):]
+    expanded_form, remaining_numeral = expanded_form_and_numeral
+    if on_last_portion(remaining_numeral):
+        return conj_string(expanded_form, remaining_numeral), []
+    else:
+        portion_to_eval = extract_portion_to_eval(remaining_numeral)
+        return conj_string(expanded_form, portion_to_eval), remaining_numeral[len(portion_to_eval):]
 
+
+def split_into_expanded_form(numeral: str) -> list[str]:
+    """
+    :param numeral: a roman numeral
+    :return: the numeral in expanded form
+    """
     def still_processing_numeral(coll):
         _, remaining_numeral = coll
         return len(remaining_numeral) != 0
 
     return thread_last(([], numeral),
-                       (iterate, add_portion_of_numeral_to_eval),
+                       (iterate, extract_largest_portion_of_numeral),
                        (dropwhile, still_processing_numeral),
                        first,
                        first)
@@ -76,11 +85,82 @@ def integer_value_of_numeral(numeral: str) -> int:
 
 def numeral_to_integer(numeral: str) -> int:
     """
-    :param numeral: a roman numeral with a value in [1, 3999
+    :param numeral: a roman numeral with a value in [1, 3999]
     :return: the numerical value of the numeral
     """
     return thread_last(numeral,
                        split_into_expanded_form,
                        (map, integer_value_of_numeral),
                        (reduce, add))
+
+
+def extract_portion_to_eval_2(roman_numeral: str) -> str:
+    """
+    :param roman_numeral: a roman numeral ranging from 1 to 3999
+    :return: the largest portion of the numeral
+    """
+    def num_of_chars_to_extract(fst_numeral, snd_numeral) -> int:
+        return 1 if numerals_to_integer[fst_numeral] >= numerals_to_integer[snd_numeral] else 2
+
+    def extract_n_chars(num_of_chars: int) -> str:
+        return roman_numeral[0: num_of_chars]
+
+    if len(roman_numeral) == 1:
+        return roman_numeral
+
+    fst, snd = roman_numeral[0: 2]
+    return extract_n_chars(num_of_chars_to_extract(fst, snd))
+
+
+def extract_largest_portion_of_numeral_2(expanded_form_and_numeral: tuple[list[str], str]):
+    """
+    :param expanded_form_and_numeral: a collection containing the
+    expanded form of a numeral and the aforementioned numeral to process
+    :return: a tuple with the expanded form containing the largest portion of the
+    numeral passed and the same numeral excluding what was recently extracted
+    """
+    def conj_string(coll, string):
+        return coll + [string]
+
+    def on_last_portion(roman_numeral):
+        return extract_portion_to_eval(roman_numeral) == roman_numeral
+
+    expanded_form, remaining_numeral = expanded_form_and_numeral
+    if on_last_portion(remaining_numeral):
+        return conj_string(expanded_form, remaining_numeral), []
+    else:
+        portion_to_eval = extract_portion_to_eval(remaining_numeral)
+        return conj_string(expanded_form, portion_to_eval), remaining_numeral[len(portion_to_eval):]
+
+
+def split_into_expanded_form_2(numeral: str) -> list[str]:
+    """
+    :param numeral: a roman numeral
+    :return: the numeral in expanded form
+    """
+    def iterate_until(func, pred, initial_val):
+        curr_val = initial_val
+        while pred(curr_val):
+            curr_val = func(curr_val)
+
+        return curr_val
+
+    def still_processing_numeral(coll):
+        _, remaining_numeral = coll
+        return len(remaining_numeral) != 0
+
+    return thread_last(([], numeral),
+                       (iterate_until, extract_largest_portion_of_numeral, still_processing_numeral),
+                       first)
+
+
+def numeral_to_integer_2(numeral: str) -> int:
+    """
+    :param numeral: a roman numeral with a value in [1, 3999]
+    :return: the numerical value of the numeral
+    """
+    expanded_form = split_into_expanded_form_2(numeral)
+    numerical_values = map(integer_value_of_numeral, expanded_form)
+    return reduce(add, numerical_values)
+
 
