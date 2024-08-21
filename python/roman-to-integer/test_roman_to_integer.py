@@ -14,13 +14,14 @@ def test_extract_portion_to_eval():
 def test_split_into_portions_to_eval():
     assert ["I", "I", "I"] == ri.split_into_expanded_form("III")
     assert ["X", "IV"] == ri.split_into_expanded_form("XIV")
-    # assert ["L", "V", "I", "I", "I"] == ri.split_into_expanded_form("LVIII")
-    # assert ["M", "CM", "XC", "IV"] == ri.split_into_expanded_form("MCMXCIV")
+    assert ["L", "V", "I", "I", "I"] == ri.split_into_expanded_form("LVIII")
+    assert ["M", "CM", "XC", "IV"] == ri.split_into_expanded_form("MCMXCIV")
 
 
 def test_numeral_to_integer():
     assert 3 == ri.numeral_to_integer("III")
     assert 58 == ri.numeral_to_integer("LVIII")
     assert 1994 == ri.numeral_to_integer("MCMXCIV")
+    assert 1 == ri.numeral_to_integer("I")
 
 

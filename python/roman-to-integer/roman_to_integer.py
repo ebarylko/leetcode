@@ -1,9 +1,22 @@
 from functools import reduce
 from itertools import dropwhile
-from toolz import concat, first, second, juxt, thread_last, iterate, take
+from operator import add
+from toolz import first, second, juxt, thread_last, iterate
 
 
-numerals_to_integer = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100, "D": 500, "M": 1000}
+numerals_to_integer = {"I": 1,
+                       "IV": 4,
+                       "V": 5,
+                       "IX": 9,
+                       "X": 10,
+                       "XL": 40,
+                       "L": 50,
+                       "XC": 90,
+                       "C": 100,
+                       "CD": 400,
+                       "D": 500,
+                       "CM": 900,
+                       "M": 1000}
 
 
 def extract_portion_to_eval(roman_numeral: str) -> str:
@@ -18,10 +31,10 @@ def extract_portion_to_eval(roman_numeral: str) -> str:
     def extract_n_chars(num_of_chars: int) -> str:
         return roman_numeral[0: num_of_chars]
 
-    return thread_last(roman_numeral,
-                       juxt(first, second),
-                       num_of_chars_to_extract,
-                       extract_n_chars
+    return roman_numeral if len(roman_numeral) == 1 else thread_last(roman_numeral,
+                                                                     juxt(first, second),
+                                                                     num_of_chars_to_extract,
+                                                                     extract_n_chars
     )
 
 
@@ -53,10 +66,21 @@ def split_into_expanded_form(numeral: str) -> list[str]:
                        first)
 
 
+def integer_value_of_numeral(numeral: str) -> int:
+    """
+    :param numeral: a roman numeral
+    :return: the numerical value of the given numeral
+    """
+    return numerals_to_integer[numeral]
+
+
 def numeral_to_integer(numeral: str) -> int:
     """
-    :param numeral:
-    :return:
+    :param numeral: a roman numeral with a value in [1, 3999
+    :return: the numerical value of the numeral
     """
-    return 8
+    return thread_last(numeral,
+                       split_into_expanded_form,
+                       (map, integer_value_of_numeral),
+                       (reduce, add))
 
