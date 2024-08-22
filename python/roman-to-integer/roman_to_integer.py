@@ -2,6 +2,7 @@ from functools import reduce
 from itertools import dropwhile
 from operator import add
 from toolz import first, second, juxt, thread_last, iterate
+from collections import namedtuple
 
 
 numerals_to_integer = {"I": 1,
@@ -112,24 +113,28 @@ def extract_portion_to_eval_2(roman_numeral: str) -> str:
     return extract_n_chars(num_of_chars_to_extract(fst, snd))
 
 
-def extract_largest_portion_of_numeral_2(expanded_form_and_numeral: tuple[list[str], str]):
+PartiallyEvaluatedNumeral = namedtuple("PartiallyEvaluatedNumeral",
+                                       ["expanded_form", "remaining_numeral"])
+
+
+def extract_largest_portion_of_numeral_2(expanded_form_and_numeral: PartiallyEvaluatedNumeral):
     """
-    :param expanded_form_and_numeral: a collection containing the
-    expanded form of a numeral and the aforementioned numeral to process
-    :return: a tuple with the expanded form containing the largest portion of the
-    numeral passed and the same numeral excluding what was recently extracted
+    :param expanded_form_and_numeral: a tuple containing the
+    current expanded form of a numeral and the aforementioned numeral to process
+    :return: the updated expanded form of the numeral and what is left of the numeral
+    to process
     """
     def conj_string(coll, string):
         return coll + [string]
 
     def on_last_portion(roman_numeral):
-        return extract_portion_to_eval(roman_numeral) == roman_numeral
+        return extract_portion_to_eval_2(roman_numeral) == roman_numeral
 
     expanded_form, remaining_numeral = expanded_form_and_numeral
     if on_last_portion(remaining_numeral):
         return conj_string(expanded_form, remaining_numeral), []
     else:
-        portion_to_eval = extract_portion_to_eval(remaining_numeral)
+        portion_to_eval = extract_portion_to_eval_2(remaining_numeral)
         return conj_string(expanded_form, portion_to_eval), remaining_numeral[len(portion_to_eval):]
 
 
@@ -149,9 +154,9 @@ def split_into_expanded_form_2(numeral: str) -> list[str]:
         _, remaining_numeral = coll
         return len(remaining_numeral) != 0
 
-    return thread_last(([], numeral),
-                       (iterate_until, extract_largest_portion_of_numeral, still_processing_numeral),
-                       first)
+    init_val = PartiallyEvaluatedNumeral([], numeral)
+    expanded_numeral, _ = iterate_until(extract_largest_portion_of_numeral_2, still_processing_numeral, init_val)
+    return expanded_numeral
 
 
 def numeral_to_integer_2(numeral: str) -> int:
