@@ -132,10 +132,13 @@ def extract_largest_portion_of_numeral_2(expanded_form_and_numeral: PartiallyEva
 
     expanded_form, remaining_numeral = expanded_form_and_numeral
     if on_last_portion(remaining_numeral):
-        return conj_string(expanded_form, remaining_numeral), []
+        return PartiallyEvaluatedNumeral(conj_string(expanded_form,
+                                                     remaining_numeral),
+                                         [])
     else:
         portion_to_eval = extract_portion_to_eval_2(remaining_numeral)
-        return conj_string(expanded_form, portion_to_eval), remaining_numeral[len(portion_to_eval):]
+        return PartiallyEvaluatedNumeral(conj_string(expanded_form, portion_to_eval),
+                                         remaining_numeral[len(portion_to_eval):])
 
 
 def split_into_expanded_form_2(numeral: str) -> list[str]:
@@ -150,12 +153,11 @@ def split_into_expanded_form_2(numeral: str) -> list[str]:
 
         return curr_val
 
-    def still_processing_numeral(coll):
-        _, remaining_numeral = coll
-        return len(remaining_numeral) != 0
+    def still_expanding_numeral(expanded_form_and_numeral: PartiallyEvaluatedNumeral):
+        return len(expanded_form_and_numeral.remaining_numeral) != 0
 
     init_val = PartiallyEvaluatedNumeral([], numeral)
-    expanded_numeral, _ = iterate_until(extract_largest_portion_of_numeral_2, still_processing_numeral, init_val)
+    expanded_numeral, _ = iterate_until(extract_largest_portion_of_numeral_2, still_expanding_numeral, init_val)
     return expanded_numeral
 
 
