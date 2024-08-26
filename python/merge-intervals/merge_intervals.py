@@ -1,6 +1,7 @@
-from toolz import thread_last, first, juxt, iterate, last, drop, count
-from itertools import takewhile
+from toolz import thread_last, first, juxt, iterate, last, count
+from itertools import takewhile, dropwhile
 from functools import partial
+from operator import add
 
 
 def overlapping_interval(current_merged_interval, unmerged_intervals):
@@ -23,7 +24,7 @@ def overlapping_interval(current_merged_interval, unmerged_intervals):
         could be expanded, None otherwise
         """
         merged_interval, current_unmerged_intervals = merged_and_unmerged_intervals
-        if count(current_unmerged_intervals) == 0 or ffirst(current_unmerged_intervals) not in range(*merged_interval):
+        if count(current_unmerged_intervals) == 0 or ffirst(current_unmerged_intervals) not in range(merged_interval[0], merged_interval[1] + 1):
             return None
         else:
             return update_interval(merged_interval, current_unmerged_intervals[0]), current_unmerged_intervals[1:]
@@ -31,7 +32,7 @@ def overlapping_interval(current_merged_interval, unmerged_intervals):
     return iterate(largest_overlapping_interval, (current_merged_interval, unmerged_intervals))
 
 
-def find_overlapping_interval(overlapping_intervals, remaining_intervals):
+def find_overlapping_interval(overlapping_and_remaining_intervals):
     """
     :param overlapping_intervals: a collection of intervals I such that each I_i represents an interval
     which encompasses one or more intervals in the original collection
@@ -48,12 +49,12 @@ def find_overlapping_interval(overlapping_intervals, remaining_intervals):
     def remaining_intervals_to_merge(merged_interval_and_remaining_unmerged_intervals):
         return list(last(merged_interval_and_remaining_unmerged_intervals))
 
+    overlapping_intervals, remaining_intervals = overlapping_and_remaining_intervals
     return thread_last(overlapping_interval(remaining_intervals[0], remaining_intervals[1:]),
                        (takewhile, interval_can_be_merged),
                        list,
                        last,
-                       juxt(partial(update_merged_intervals, overlapping_intervals), remaining_intervals_to_merge)
-                       )
+                       juxt(partial(update_merged_intervals, overlapping_intervals), remaining_intervals_to_merge))
 
 
 def merge_intervals(intervals):
@@ -65,11 +66,19 @@ def merge_intervals(intervals):
     def sort_by_lower_bound(intervls):
         return sorted(intervls, key=first)
 
-    def gen_range(interval):
-        return set(range(interval[0], interval[1] + 1))
+    def still_merging_intervals(merged_and_unmerged_intervals):
+        _, unmerged_intervals = merged_and_unmerged_intervals
+        return count(unmerged_intervals) != 0
+
+    def prepare_initial_data(unmerged_intervals):
+        return [[], unmerged_intervals]
 
     return thread_last(intervals,
                        sort_by_lower_bound,
-
+                       prepare_initial_data,
+                       (iterate, find_overlapping_interval),
+                       (dropwhile, still_merging_intervals),
+                       list
+                       # next,
                        )
 
