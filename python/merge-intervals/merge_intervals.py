@@ -78,7 +78,9 @@ def merge_intervals(intervals):
                        prepare_initial_data,
                        (iterate, find_overlapping_interval),
                        (dropwhile, still_merging_intervals),
+                       next,
+                       first,
+                       (map, list),
                        list
-                       # next,
                        )
 
