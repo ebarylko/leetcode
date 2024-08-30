@@ -116,7 +116,7 @@ def iterate_until(func, pred, initial_val):
 def find_overlapping_interval_2(overlapping_and_remaining_intervals):
     """
     :param overlapping_and_remaining_intervals: a tuple of merged intervals and the intervals remaining to merge
-    :return: an updated set of the overlapping intervals with the remaining intervals which did not overlap
+    :return: an expanded set of the overlapping intervals with the remaining intervals which did not overlap
     """
     def interval_can_be_merged(interval):
         return interval is not None
@@ -125,19 +125,19 @@ def find_overlapping_interval_2(overlapping_and_remaining_intervals):
         return current_merged_intervals + [merged_interval]
 
     overlapping_intervals, remaining_intervals = overlapping_and_remaining_intervals
-    init_value = (remaining_intervals[0], remaining_intervals[1:])
-    new_merged_interval, remaining_intervals = iterate_until(overlapping_interval_2, interval_can_be_merged, init_value)
+    intervals_to_merge = (remaining_intervals[0], remaining_intervals[1:])
+    new_merged_interval, remaining_intervals = iterate_until(overlapping_interval_2,
+                                                             interval_can_be_merged,
+                                                             intervals_to_merge)
 
-    add_new_interval = partial(update_merged_intervals, overlapping_intervals)
-
-    return add_new_interval(new_merged_interval), remaining_intervals
+    return update_merged_intervals(overlapping_intervals, new_merged_interval), remaining_intervals
 
 
 def merge_intervals_2(intervals):
     """
-    :param intervals: a collection of pairs, each containing a minimum and maximum element of the range
+    :param intervals: a collection of pairs, each containing a minimum and maximum element of the interval
     they represent
-    :return: the merged intervals
+    :return: joins all the intervals sharing a common element and returns the resulting disjoint intervals
     """
     def sort_by_lower_bound(intervls):
         return sorted(intervls, key=first)
@@ -153,13 +153,9 @@ def merge_intervals_2(intervals):
         """
         :param coll: a collection of data
         :param pred: a predicate which can be applied on each element in coll
-        :return: the first element in coll satisfying pred
+        :return: the first element in coll not satisfying pred
         """
-        curr_val = next(coll)
-        while pred(curr_val):
-            curr_val = next(coll)
-
-        return curr_val
+        return next(dropwhile(pred, coll))
 
     def iterate_using_f(func, x):
         while True:
@@ -168,7 +164,7 @@ def merge_intervals_2(intervals):
 
     initial_data = prepare_initial_data(sort_by_lower_bound(intervals))
     merged_intervals, _ = first_elem_not_satisfying_pred(iterate_using_f(find_overlapping_interval_2, initial_data),
-                                                          still_merging_intervals)
+                                                         still_merging_intervals)
     return merged_intervals
 
 
