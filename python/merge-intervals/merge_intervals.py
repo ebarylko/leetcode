@@ -155,10 +155,9 @@ def merge_intervals_2(intervals):
         :param pred: a predicate which can be applied on each element in coll
         :return: the first element in coll satisfying pred
         """
-        cpy = iter(coll)
-        curr_val = next(cpy)
+        curr_val = next(coll)
         while not pred(curr_val):
-            curr_val = next(cpy)
+            curr_val = next(coll)
 
         return curr_val
 
@@ -168,8 +167,8 @@ def merge_intervals_2(intervals):
             x = func(x)
 
     initial_data = prepare_initial_data(sort_by_lower_bound(intervals))
-    merged_interval, _ = find_first_elem_satisfying_pred(iterate_using_f(find_overlapping_interval_2, initial_data), still_merging_intervals)
-    merged_intervals, _ = iterate_until(find_overlapping_interval_2, still_merging_intervals, initial_data)
+    merged_intervals, _ = find_first_elem_satisfying_pred(iterate_using_f(find_overlapping_interval_2, initial_data),
+                                                          still_merging_intervals)
     return merged_intervals
 
 
