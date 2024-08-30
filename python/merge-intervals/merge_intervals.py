@@ -1,7 +1,6 @@
 from toolz import thread_last, first, juxt, iterate, last, count
 from itertools import takewhile, dropwhile
 from functools import partial
-from operator import add
 
 
 def overlapping_interval(current_merged_interval, unmerged_intervals):
@@ -83,4 +82,94 @@ def merge_intervals(intervals):
                        (map, list),
                        list
                        )
+
+
+def overlapping_interval_2(merged_and_unmerged_intervals):
+    """
+    :param merged_and_unmerged_intervals: the largest merged interval so far and the intervals remaining to merge
+    :return: a collection containing the updated largest overlapping interval and the remaining intervals which did not overlap if
+    the interval could be expanded, None otherwise
+    """
+    def update_interval(interval_1, interval_2):
+        joined_intervals = interval_1 + interval_2
+        return [min(joined_intervals), max(joined_intervals)]
+
+    def ffirst(coll):
+        return coll[0][0]
+
+    merged_interval, current_unmerged_intervals = merged_and_unmerged_intervals
+    if len(current_unmerged_intervals) == 0 or ffirst(current_unmerged_intervals) not in range(merged_interval[0], merged_interval[1] + 1):
+        return None
+    else:
+        return update_interval(merged_interval, current_unmerged_intervals[0]), current_unmerged_intervals[1:]
+
+
+def iterate_until(func, pred, initial_val):
+    curr_val, prev = initial_val, initial_val
+    while pred(curr_val):
+        prev = curr_val
+        curr_val = func(curr_val)
+
+    return prev
+
+
+def find_overlapping_interval_2(overlapping_and_remaining_intervals):
+    """
+    :param overlapping_and_remaining_intervals: a tuple of merged intervals and the intervals remaining to merge
+    :return: an updated set of the overlapping intervals with the remaining intervals which did not overlap
+    """
+    def interval_can_be_merged(interval):
+        return interval is not None
+
+    def update_merged_intervals(current_merged_intervals, merged_interval):
+        return current_merged_intervals + [merged_interval]
+
+    overlapping_intervals, remaining_intervals = overlapping_and_remaining_intervals
+    init_value = (remaining_intervals[0], remaining_intervals[1:])
+    new_merged_interval, remaining_intervals = iterate_until(overlapping_interval_2, interval_can_be_merged, init_value)
+
+    add_new_interval = partial(update_merged_intervals, overlapping_intervals)
+
+    return add_new_interval(new_merged_interval), remaining_intervals
+
+
+def merge_intervals_2(intervals):
+    """
+    :param intervals: a collection of pairs, each containing a minimum and maximum element of the range
+    they represent
+    :return: the merged intervals
+    """
+    def sort_by_lower_bound(intervls):
+        return sorted(intervls, key=first)
+
+    def still_merging_intervals(merged_and_unmerged_intervals):
+        _, unmerged_intervals = merged_and_unmerged_intervals
+        return count(unmerged_intervals) != 0
+
+    def prepare_initial_data(unmerged_intervals):
+        return [[], unmerged_intervals]
+
+    def find_first_elem_satisfying_pred(coll, pred):
+        """
+        :param coll: a collection of data
+        :param pred: a predicate which can be applied on each element in coll
+        :return: the first element in coll satisfying pred
+        """
+        cpy = iter(coll)
+        curr_val = next(cpy)
+        while not pred(curr_val):
+            curr_val = next(cpy)
+
+        return curr_val
+
+    def iterate_using_f(func, x):
+        while True:
+            yield x
+            x = func(x)
+
+    initial_data = prepare_initial_data(sort_by_lower_bound(intervals))
+    merged_interval, _ = find_first_elem_satisfying_pred(iterate_using_f(find_overlapping_interval_2, initial_data), still_merging_intervals)
+    merged_intervals, _ = iterate_until(find_overlapping_interval_2, still_merging_intervals, initial_data)
+    return merged_intervals
+
 
