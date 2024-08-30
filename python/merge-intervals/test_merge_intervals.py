@@ -22,6 +22,6 @@ def test_find_overlapping_intervals_2():
 
 
 def test_merge_intervals_2():
-    assert [[1, 6], [8, 10], [15, 18]] == mi.merge_intervals_2([[2, 6], [1, 3], [8, 10], [15, 18]])
-    assert [[1, 5]] == mi.merge_intervals_2([[1, 4],[4, 5]])
-    assert [[1, 4]] == mi.merge_intervals_2([[1, 4]])
+    assert mi.merge_intervals_2([[2, 6], [1, 3], [8, 10], [15, 18]]) == [[1, 6], [8, 10], [15, 18]]
+    assert mi.merge_intervals_2([[1, 4],[4, 5]]) == [[1, 5]]
+    assert mi.merge_intervals_2([[1, 4]]) == [[1, 4]]

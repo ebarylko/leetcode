@@ -87,7 +87,7 @@ def merge_intervals(intervals):
 def overlapping_interval_2(merged_and_unmerged_intervals):
     """
     :param merged_and_unmerged_intervals: the largest merged interval so far and the intervals remaining to merge
-    :return: a collection containing the updated largest overlapping interval and the remaining intervals which did not overlap if
+    :return: the largest overlapping interval found so far and the remaining intervals if
     the interval could be expanded, None otherwise
     """
     def update_interval(interval_1, interval_2):
@@ -97,8 +97,16 @@ def overlapping_interval_2(merged_and_unmerged_intervals):
     def ffirst(coll):
         return coll[0][0]
 
+    def no_more_intervals_to_merge(unmerged_intervals):
+        return len(unmerged_intervals) == 0
+
+    def interval_cannot_be_expanded(interval_to_expand, unmerged_intervals):
+        return ffirst(unmerged_intervals) > interval_to_expand[1]
+
     merged_interval, current_unmerged_intervals = merged_and_unmerged_intervals
-    if len(current_unmerged_intervals) == 0 or ffirst(current_unmerged_intervals) not in range(merged_interval[0], merged_interval[1] + 1):
+
+    if no_more_intervals_to_merge(current_unmerged_intervals) or interval_cannot_be_expanded(merged_interval,
+                                                                                             current_unmerged_intervals):
         return None
     else:
         return update_interval(merged_interval, current_unmerged_intervals[0]), current_unmerged_intervals[1:]
