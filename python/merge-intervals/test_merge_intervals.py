@@ -25,3 +25,10 @@ def test_merge_intervals_2():
     assert mi.merge_intervals_2([[2, 6], [1, 3], [8, 10], [15, 18]]) == [[1, 6], [8, 10], [15, 18]]
     assert mi.merge_intervals_2([[1, 4],[4, 5]]) == [[1, 5]]
     assert mi.merge_intervals_2([[1, 4]]) == [[1, 4]]
+
+
+def test_merge_intervals_3():
+    assert mi.merge_intervals_3([[2, 6], [1, 3], [8, 10], [15, 18]]) == [[1, 6], [8, 10], [15, 18]]
+    assert mi.merge_intervals_3([[1, 4],[4, 5]]) == [[1, 5]]
+    assert mi.merge_intervals_3([[1, 4]]) == [[1, 4]]
+    assert mi.merge_intervals_3([[1, 3], [4, 5], [5, 8], [15, 18]]) == [[1, 3], [4, 8], [15, 18]]

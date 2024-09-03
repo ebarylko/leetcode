@@ -1,6 +1,6 @@
-from toolz import thread_last, first, juxt, iterate, last, count
+from toolz import thread_last, first, juxt, iterate, last, count, compose
 from itertools import takewhile, dropwhile
-from functools import partial
+from functools import partial, reduce
 
 
 def overlapping_interval(current_merged_interval, unmerged_intervals):
@@ -16,6 +16,12 @@ def overlapping_interval(current_merged_interval, unmerged_intervals):
     def ffirst(coll):
         return first(first(coll))
 
+    def no_more_intervals_to_merge(intervals):
+        return count(intervals) == 0
+
+    def interval_cannot_be_expanded(interval_to_expand, unmerged_intervals):
+        return ffirst(unmerged_intervals) > interval_to_expand[1]
+
     def largest_overlapping_interval(merged_and_unmerged_intervals):
         """
         :param merged_and_unmerged_intervals: the largest merged interval so far and the intervals remaining to merge
@@ -23,8 +29,8 @@ def overlapping_interval(current_merged_interval, unmerged_intervals):
         could be expanded, None otherwise
         """
         merged_interval, current_unmerged_intervals = merged_and_unmerged_intervals
-        if count(current_unmerged_intervals) == 0 or ffirst(current_unmerged_intervals) not in range(merged_interval[0], merged_interval[1] + 1):
-            return None
+        if no_more_intervals_to_merge(current_unmerged_intervals) or interval_cannot_be_expanded(merged_interval, current_unmerged_intervals):
+            return "IntervalCannotBeMerged"
         else:
             return update_interval(merged_interval, current_unmerged_intervals[0]), current_unmerged_intervals[1:]
 
@@ -33,13 +39,11 @@ def overlapping_interval(current_merged_interval, unmerged_intervals):
 
 def find_overlapping_interval(overlapping_and_remaining_intervals):
     """
-    :param overlapping_intervals: a collection of intervals I such that each I_i represents an interval
-    which encompasses one or more intervals in the original collection
-    :param remaining_intervals: a subset of the intervals in the original collection which have not been merged
+    :param overlapping_and_remaining_intervals: a tuple of the merged and remaining intervals to merge
     :return: an updated set of the overlapping intervals with the remaining intervals which did not overlap
     """
     def interval_can_be_merged(interval):
-        return interval is not None
+        return not interval == "IntervalCannotBeMerged"
 
     def update_merged_intervals(current_merged_intervals, merged_interval_and_remaining_unmerged_intervals):
         merged_interval, _ = merged_interval_and_remaining_unmerged_intervals
@@ -175,4 +179,45 @@ def merge_intervals_2(intervals):
                                                          still_merging_intervals)
     return merged_intervals
 
+
+def merge_intervals_3(intervals):
+    """
+    :param intervals: a collection of pairs, each containing a minimum and maximum element of the range
+    they represent
+    :return: the merged intervals
+    """
+    def sort_by_lower_bound(intervls):
+        return sorted(intervls, key=first)
+
+    def into_vec(coll):
+        return [coll]
+
+    def expand_interval(merged_intervals, unmerged_interval):
+        """
+        :param merged_intervals: the intervals which have been merged so far
+        :param unmerged_interval: the intervals left to merged
+        :return: returns the merged intervals and either expands the newest merged interval or adds
+        a disjoint interval
+        """
+        def interval_can_be_expanded(merged_interval, interval_to_merge):
+            return merged_interval[1] >= interval_to_merge[0]
+
+        def update_interval(mrged_intervals, interval_to_add):
+            expanded_interval = [[mrged_intervals[-1][0], max(mrged_intervals[-1][1], interval_to_add[1])]]
+            all_but_last_intrval = mrged_intervals[0: len(mrged_intervals) - 1]
+            return all_but_last_intrval + expanded_interval
+
+        def add_interval(mrged_intervals, interval_to_add):
+            return mrged_intervals + [interval_to_add]
+
+        if interval_can_be_expanded(last(merged_intervals), first(unmerged_interval)):
+            return update_interval(merged_intervals, first(unmerged_interval))
+        else:
+            return add_interval(merged_intervals, first(unmerged_interval))
+
+    return thread_last(intervals,
+                       sort_by_lower_bound,
+                       compose(list, partial(map, into_vec)),
+                       (reduce, expand_interval),
+                       )
 
