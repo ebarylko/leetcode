@@ -202,22 +202,27 @@ def merge_intervals_3(intervals):
         def interval_can_be_expanded(merged_interval, interval_to_merge):
             return merged_interval[1] >= interval_to_merge[0]
 
+        def all_but_last(coll):
+            return coll[0: len(coll) - 1]
+
         def update_interval(mrged_intervals, interval_to_add):
-            expanded_interval = [[mrged_intervals[-1][0], max(mrged_intervals[-1][1], interval_to_add[1])]]
-            all_but_last_intrval = mrged_intervals[0: len(mrged_intervals) - 1]
-            return all_but_last_intrval + expanded_interval
+            interval_to_update = mrged_intervals[-1]
+            expanded_interval = [interval_to_update[0], max(interval_to_update[1], interval_to_add[1])]
+            return add_interval(all_but_last(mrged_intervals),
+                                expanded_interval)
 
-        def add_interval(mrged_intervals, interval_to_add):
-            return mrged_intervals + [interval_to_add]
+        def add_interval(coll, interval_to_add):
+            return coll + [interval_to_add]
 
-        if interval_can_be_expanded(last(merged_intervals), first(unmerged_interval)):
-            return update_interval(merged_intervals, first(unmerged_interval))
+        interval_to_merge = first(unmerged_interval)
+
+        if interval_can_be_expanded(last(merged_intervals), interval_to_merge):
+            return update_interval(merged_intervals, interval_to_merge)
         else:
-            return add_interval(merged_intervals, first(unmerged_interval))
+            return add_interval(merged_intervals, interval_to_merge)
 
     return thread_last(intervals,
                        sort_by_lower_bound,
                        compose(list, partial(map, into_vec)),
-                       (reduce, expand_interval),
-                       )
+                       (reduce, expand_interval))
 
